@@ -3,11 +3,11 @@
   "version": "1.0.0",
   "description": "",
   "license": "ISC",
-  "author": "",
+  "author": "Sagar Singh Baghel",
   "type": "commonjs",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "server": "nodemon src/index.js"
   },
   "dependencies": {
     "express": "^5.1.0"
