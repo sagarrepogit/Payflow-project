@@ -1,17 +1,19 @@
 {
-  "name": "task-manager",
+  "name": "payflow-paymentgateway",
   "version": "1.0.0",
-  "description": "",
+  "description": "A full-stack payment gateway system with secure payment processing, webhooks, refunds, and merchant settlement workflows inspired by real-world fintech platforms.",
   "license": "ISC",
   "author": "Sagar Singh Baghel",
   "type": "commonjs",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
-    "server": "nodemon src/index.js"
+    "server": "nodemon src/server.js",
+    "node": "node src/server.js"
   },
   "dependencies": {
     "dotenv": "^17.2.3",
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "mongoose": "^8.21.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.10"
