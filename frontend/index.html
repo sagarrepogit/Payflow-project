@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PayFlow Payment Gateway</title>
+    <!-- 
+        WHY VIEWPORT META TAG?
+        Makes website responsive on mobile devices
+        width=device-width sets width to match device screen width
+        initial-scale=1.0 sets zoom level to 100%
+    -->
+</head>
+<body>
+    <!-- 
+        WHY ROOT DIV?
+        React needs a container element to mount the app
+        React app will be rendered inside this div
+        id="root" is standard convention in React apps
+    -->
+    <div id="root"></div>
+    
+    <!-- 
+        WHY SCRIPT TAG?
+        Loads the main JavaScript entry point
+        type="module" enables ES6 modules (import/export)
+        src="/src/main.jsx" is where our React app starts
+    -->
+    <script type="module" src="/src/main.jsx"></script>
+</body>
+</html>

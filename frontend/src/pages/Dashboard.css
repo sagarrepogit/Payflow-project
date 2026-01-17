@@ -1,0 +1,183 @@
+/* ============================================================================
+   DASHBOARD STYLES - Styles for main dashboard page
+   ============================================================================ */
+   
+/* WHY SEPARATE CSS FILE?
+   Keeps dashboard styles organized
+   Matches design theme from provided images
+   White background, gray accents, red highlights */
+
+/* ============================================================================
+   DASHBOARD CONTAINER - Main wrapper for entire dashboard
+   ============================================================================ */
+.dashboard-container {
+  min-height: 100vh; /* WHY 100VH? Full viewport height */
+  background-color: #f5f5f5; /* WHY GRAY? Matches design theme - light gray background */
+}
+
+/* ============================================================================
+   DASHBOARD HEADER - Top header bar with logo and user info
+   ============================================================================ */
+.dashboard-header {
+  /* WHY FLEXBOX?
+     Distributes logo and user info to opposite ends
+     Responsive layout that works on all screen sizes */
+  display: flex;
+  justify-content: space-between; /* WHY? Pushes logo left, user info right */
+  align-items: center; /* WHY? Vertically centers items */
+  padding: 20px 40px; /* WHY PADDING? Comfortable spacing from edges */
+  background-color: #ffffff; /* WHY WHITE? Matches design - header on white background */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* WHY SHADOW? Separates header from content */
+  border-bottom: 1px solid #e0e0e0; /* WHY BORDER? Subtle separation line */
+}
+
+/* WHY LOGO SECTION?
+   Contains app name and branding
+   Matches design from images */
+.logo h1 {
+  font-size: 24px;
+  color: #333;
+  margin: 0;
+  display: inline-block;
+}
+
+.logo span {
+  font-size: 12px;
+  color: #666;
+  margin-left: 5px;
+}
+
+/* WHY USER INFO SECTION?
+   Displays logged-in user's email and logout button
+   Right side of header */
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 15px; /* WHY GAP? Space between email text and logout button */
+  color: #666;
+  font-size: 14px;
+}
+
+.btn-logout {
+  padding: 8px 16px; /* WHY PADDING? Comfortable button size */
+  background-color: #d32f2f; /* WHY RED? Matches design theme - red button */
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s;
+}
+
+.btn-logout:hover {
+  background-color: #b71c1c; /* WHY DARKER RED? Hover feedback */
+}
+
+/* ============================================================================
+   DASHBOARD CONTENT - Main content area below header
+   ============================================================================ */
+.dashboard-content {
+  padding: 40px; /* WHY PADDING? Space from edges */
+  max-width: 1200px; /* WHY MAX-WIDTH? Prevents content from being too wide on large screens */
+  margin: 0 auto; /* WHY AUTO MARGIN? Centers content horizontally */
+}
+
+/* ============================================================================
+   WELCOME CARD - Card showing user information
+   ============================================================================ */
+.welcome-card {
+  background-color: #ffffff; /* WHY WHITE? Matches design - cards on white background */
+  border-radius: 8px; /* WHY ROUNDED? Modern design aesthetic */
+  padding: 30px; /* WHY PADDING? Space inside card */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* WHY SHADOW? Gives card depth */
+  margin-bottom: 30px; /* WHY MARGIN? Space between cards */
+}
+
+.welcome-card h2 {
+  color: #333;
+  margin-bottom: 15px;
+  font-size: 24px;
+}
+
+.welcome-card p {
+  color: #666;
+  margin: 8px 0;
+  font-size: 14px;
+}
+
+/* ============================================================================
+   STATS SECTION - Statistics cards matching design theme
+   ============================================================================ */
+.stats-section {
+  margin-top: 30px; /* WHY MARGIN? Space above stats section */
+}
+
+.stats-section h3 {
+  color: #333;
+  margin-bottom: 20px;
+  font-size: 20px;
+}
+
+.stats-grid {
+  /* WHY GRID LAYOUT?
+     Displays stat cards in responsive grid
+     Automatically adjusts columns based on screen size */
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* WHY? Responsive - 1 column on mobile, multiple on desktop */
+  gap: 20px; /* WHY GAP? Space between cards */
+}
+
+.stat-card {
+  background-color: #ffffff; /* WHY WHITE? Matches design theme */
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid #d32f2f; /* WHY RED LEFT BORDER? Matches design - red accent */
+}
+
+.stat-card h4 {
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 10px;
+  font-weight: 500;
+}
+
+.stat-value {
+  color: #333;
+  font-size: 28px;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* ============================================================================
+   LOADING STATE
+   ============================================================================ */
+.loading {
+  text-align: center;
+  padding: 60px;
+  color: #666;
+  font-size: 18px;
+}
+
+/* ============================================================================
+   RESPONSIVE DESIGN - Styles for mobile devices
+   ============================================================================ */
+@media (max-width: 768px) {
+  /* WHY MEDIA QUERY?
+     Adjusts layout for smaller screens
+     Better mobile experience */
+  
+  .dashboard-header {
+    padding: 15px 20px; /* WHY LESS PADDING? More space on small screens */
+    flex-direction: column; /* WHY COLUMN? Stack logo and user info vertically on mobile */
+    gap: 15px;
+  }
+  
+  .dashboard-content {
+    padding: 20px; /* WHY LESS PADDING? More space for content on mobile */
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr; /* WHY 1 COLUMN? Single column on mobile for better readability */
+  }
+}

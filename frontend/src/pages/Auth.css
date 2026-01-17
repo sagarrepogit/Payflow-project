@@ -1,0 +1,192 @@
+/* ============================================================================
+   AUTH PAGES STYLES - Styles for Signup, Login, and VerifyOTP pages
+   ============================================================================ */
+   
+/* WHY SEPARATE CSS FILE?
+   Keeps styles organized by feature
+   Reusable styles for all authentication pages
+   Matches clean design theme (white background, gray accents, red buttons) */
+
+/* ============================================================================
+   AUTH CONTAINER - Wrapper for entire auth page
+   ============================================================================ */
+.auth-container {
+  /* WHY FLEXBOX?
+     Centers the auth card vertically and horizontally
+     Creates responsive, centered layout */
+  display: flex;
+  justify-content: center; /* WHY? Centers horizontally */
+  align-items: center; /* WHY? Centers vertically */
+  min-height: 100vh; /* WHY 100VH? Full viewport height - card appears centered on screen */
+  background-color: #f5f5f5; /* WHY GRAY? Matches design theme - light gray background */
+  padding: 20px; /* WHY PADDING? Prevents card from touching screen edges on mobile */
+}
+
+/* ============================================================================
+   AUTH CARD - The white card containing the form
+   ============================================================================ */
+.auth-card {
+  /* WHY WHITE BACKGROUND?
+     Matches design theme - forms appear on white cards
+     Creates contrast against gray background */
+  background-color: #ffffff;
+  border-radius: 8px; /* WHY ROUNDED CORNERS? Modern, clean design aesthetic */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* WHY SHADOW? Gives card depth, separates from background */
+  padding: 40px; /* WHY PADDING? Space inside card for comfortable form layout */
+  width: 100%; /* WHY 100%? Responsive - takes full width on mobile */
+  max-width: 450px; /* WHY MAX-WIDTH? Prevents card from being too wide on large screens */
+}
+
+/* ============================================================================
+   HEADINGS
+   ============================================================================ */
+.auth-card h2 {
+  /* WHY LARGE FONT?
+     Clear hierarchy - title should stand out
+     Matches design aesthetic */
+  font-size: 28px;
+  margin-bottom: 30px; /* WHY MARGIN? Space between title and form */
+  color: #333; /* WHY DARK GRAY? Good contrast, readable text */
+  text-align: center; /* WHY CENTER? Balanced, professional appearance */
+}
+
+/* OTP Info Text */
+.otp-info {
+  text-align: center;
+  color: #666;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+/* ============================================================================
+   FORM GROUPS - Container for each form field (label + input)
+   ============================================================================ */
+.form-group {
+  margin-bottom: 20px; /* WHY MARGIN? Space between form fields */
+}
+
+.form-group label {
+  /* WHY DISPLAY BLOCK?
+     Label appears above input (stacked layout)
+     More readable than inline labels */
+  display: block;
+  margin-bottom: 8px; /* WHY MARGIN? Space between label and input */
+  color: #333;
+  font-weight: 500; /* WHY 500? Slightly bold - makes labels stand out */
+  font-size: 14px;
+}
+
+/* ============================================================================
+   INPUT FIELDS
+   ============================================================================ */
+.form-group input {
+  /* WHY FULL WIDTH?
+     Inputs should take full available width
+     Consistent, clean appearance */
+  width: 100%;
+  padding: 12px 16px; /* WHY PADDING? Comfortable spacing inside input */
+  border: 1px solid #e0e0e0; /* WHY LIGHT GRAY BORDER? Subtle, matches design theme */
+  border-radius: 4px; /* WHY ROUNDED? Matches card's rounded corners */
+  font-size: 16px; /* WHY 16PX? Prevents zoom on iOS (accessibility) */
+  transition: border-color 0.3s; /* WHY TRANSITION? Smooth color change on focus */
+  box-sizing: border-box; /* WHY? Includes padding/border in width calculation */
+}
+
+/* WHY FOCUS STATE?
+   Provides visual feedback when user clicks input
+   Improves UX - user knows which field is active */
+.form-group input:focus {
+  outline: none; /* WHY NO OUTLINE? Custom focus style instead */
+  border-color: #d32f2f; /* WHY RED? Matches design theme - red accent color */
+  box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.1); /* WHY SHADOW? Subtle glow effect */
+}
+
+/* WHY ERROR STATE?
+   Visual indication of validation error
+   Red border matches error styling */
+.form-group input.error {
+  border-color: #f44336; /* WHY RED BORDER? Indicates error state */
+}
+
+/* ============================================================================
+   ERROR MESSAGES
+   ============================================================================ */
+.error-message {
+  /* WHY RED BACKGROUND?
+     Red is standard color for errors
+     Immediately draws attention */
+  background-color: #ffebee; /* WHY LIGHT RED? Light background for readability */
+  color: #c62828; /* WHY DARK RED? Dark text on light background for contrast */
+  padding: 12px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.error-text {
+  /* WHY RED TEXT?
+     Indicates which field has error
+     Small text below input field */
+  color: #f44336;
+  font-size: 12px;
+  margin-top: 5px;
+  display: block; /* WHY BLOCK? Appears on new line below input */
+}
+
+/* ============================================================================
+   BUTTONS
+   ============================================================================ */
+.btn-primary {
+  /* WHY FULL WIDTH?
+     Prominent call-to-action button
+     Easy to click on mobile devices */
+  width: 100%;
+  padding: 14px; /* WHY PADDING? Comfortable button size, easy to click */
+  background-color: #d32f2f; /* WHY RED? Matches design theme - red is primary color */
+  color: #ffffff; /* WHY WHITE TEXT? High contrast against red background */
+  border: none; /* WHY NO BORDER? Clean, modern button design */
+  border-radius: 4px; /* WHY ROUNDED? Matches input field style */
+  font-size: 16px;
+  font-weight: 600; /* WHY SEMI-BOLD? Makes button text stand out */
+  cursor: pointer; /* WHY POINTER? Indicates button is clickable */
+  transition: background-color 0.3s; /* WHY TRANSITION? Smooth color change on hover */
+  margin-top: 10px; /* WHY MARGIN? Space above button */
+}
+
+/* WHY HOVER STATE?
+   Visual feedback when user hovers over button
+   Indicates interactivity */
+.btn-primary:hover:not(:disabled) {
+  background-color: #b71c1c; /* WHY DARKER RED? Darker shade on hover - visual feedback */
+}
+
+/* WHY DISABLED STATE?
+   Button disabled during API call (prevents double-click)
+   Grayed out indicates button is not clickable */
+.btn-primary:disabled {
+  background-color: #cccccc; /* WHY GRAY? Indicates disabled state */
+  cursor: not-allowed; /* WHY NOT-ALLOWED CURSOR? Shows button can't be clicked */
+}
+
+/* ============================================================================
+   AUTH LINK - Link to switch between signup/login
+   ============================================================================ */
+.auth-link {
+  text-align: center; /* WHY CENTER? Balanced layout */
+  margin-top: 20px; /* WHY MARGIN? Space above link */
+  color: #666; /* WHY GRAY? Less prominent than main content */
+  font-size: 14px;
+}
+
+.auth-link a {
+  color: #d32f2f; /* WHY RED LINK? Matches primary color, indicates clickable */
+  text-decoration: none; /* WHY NO UNDERLINE? Modern, clean design */
+  font-weight: 500; /* WHY SEMI-BOLD? Makes link stand out */
+}
+
+/* WHY HOVER STATE FOR LINK?
+   Visual feedback when hovering over link
+   Indicates link is clickable */
+.auth-link a:hover {
+  text-decoration: underline; /* WHY UNDERLINE ON HOVER? Clear indication of interactivity */
+}
