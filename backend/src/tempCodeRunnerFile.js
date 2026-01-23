@@ -1,1 +1,0 @@
-'http://localhost:3000', // Frontend URL (running on port 3000)

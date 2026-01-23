@@ -4,7 +4,7 @@
 
 1. **Install Dependencies:**
    ```bash
-   cd client
+   cd frontend
    npm install
    ```
 
@@ -12,10 +12,12 @@
    ```bash
    npm run dev
    ```
-   This will start the frontend on http://localhost:3000
+   This will start the frontend on http://localhost:3000 or http://localhost:5173
 
-3. **Make sure backend is running:**
-   Backend should be running on http://localhost:4000
+3. **Make sure Java backend is running:**
+   - Backend should be running on http://localhost:4000
+   - Start backend: `cd java-backend && mvn spring-boot:run`
+   - Or from root: `npm run backend`
 
 ## Project Structure
 

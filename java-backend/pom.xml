@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    POM.XML - Project Object Model
+    ============================================================================
+    
+    WHAT IS POM.XML?
+    - Maven configuration file (Maven is Java's build tool and dependency manager)
+    - Defines project metadata, dependencies, and build configuration
+    - Similar to package.json in Node.js (but more powerful)
+    
+    WHY MAVEN?
+    - Dependency management: Automatically downloads libraries (like npm install)
+    - Build tool: Compiles Java code, runs tests, packages application
+    - Standard: Industry standard for Java projects
+    - Lifecycle: Provides build lifecycle (compile, test, package, install)
+    
+    MIGRATION FROM NODE.JS:
+    - package.json → pom.xml
+    - npm install → mvn install
+    - npm run server → mvn spring-boot:run
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    
+    <!-- Project Metadata -->
+    <modelVersion>4.0.0</modelVersion>
+    
+    <!-- Parent POM: Inherits Spring Boot configuration -->
+    <!-- WHY PARENT POM?
+         - Provides default configurations for Spring Boot
+         - Manages dependency versions automatically
+         - Simplifies configuration (don't need to specify versions for Spring libraries)
+    -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.2.0</version>
+        <relativePath/>
+    </parent>
+    
+    <!-- Project Information -->
+    <groupId>com.payflow</groupId>
+    <artifactId>payflow-backend</artifactId>
+    <version>1.0.0</version>
+    <name>PayFlow Payment Gateway Backend</name>
+    <description>Java/Spring Boot backend for PayFlow payment gateway system</description>
+    
+    <!-- Java Version -->
+    <properties>
+        <java.version>17</java.version>
+        <!-- WHY JAVA 17?
+             - LTS (Long Term Support) version
+             - Modern features (records, pattern matching, etc.)
+             - Spring Boot 3.x requires Java 17+
+        -->
+    </properties>
+    
+    <!-- Dependencies: Libraries your project needs -->
+    <!-- MIGRATION FROM NODE.JS:
+         - express → spring-boot-starter-web
+         - mysql2 → mysql-connector-j
+         - jsonwebtoken → jjwt (Java JWT library)
+         - bcryptjs → Spring Security (has BCryptPasswordEncoder)
+         - dotenv → Spring Boot handles via application.properties
+    -->
+    <dependencies>
+        
+        <!-- Spring Boot Web Starter -->
+        <!-- WHAT DOES THIS PROVIDE?
+             - Spring MVC (REST API framework)
+             - Embedded Tomcat server
+             - JSON support (Jackson)
+             - Web utilities
+             - Similar to Express.js in Node.js
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        
+        <!-- Spring Boot Data JPA -->
+        <!-- WHAT DOES THIS PROVIDE?
+             - JPA (Java Persistence API) for database access
+             - Hibernate (ORM - Object Relational Mapping)
+             - Repository pattern support
+             - Similar to mysql2 + manual SQL in Node.js, but with ORM
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        
+        <!-- MySQL Connector -->
+        <!-- WHAT DOES THIS PROVIDE?
+             - JDBC driver for MySQL
+             - Allows Java to connect to MySQL database
+             - Similar to mysql2 package in Node.js
+        -->
+        <dependency>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        
+        <!-- Spring Boot Security -->
+        <!-- WHAT DOES THIS PROVIDE?
+             - Security framework
+             - Password encoding (BCrypt)
+             - Authentication/Authorization
+             - Similar to bcryptjs + JWT middleware in Node.js
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        
+        <!-- Spring Boot Validation -->
+        <!-- WHAT DOES THIS PROVIDE?
+             - Bean Validation (JSR-303)
+             - @NotNull, @Email, @Size annotations
+             - Input validation
+             - Similar to manual validation in Node.js controllers
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+        
+        <!-- JWT Library (JJWT) -->
+        <!-- WHAT DOES THIS PROVIDE?
+             - JWT token creation and verification
+             - Similar to jsonwebtoken package in Node.js
+        -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>0.11.5</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>0.11.5</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>0.11.5</version>
+            <scope>runtime</scope>
+        </dependency>
+        
+        <!-- Spring Boot DevTools (Optional - for hot reload) -->
+        <!-- WHAT DOES THIS PROVIDE?
+             - Automatic restart on code changes
+             - Similar to nodemon in Node.js
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <scope>runtime</scope>
+            <optional>true</optional>
+        </dependency>
+        
+        <!-- Spring Boot Test (for testing) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        
+    </dependencies>
+    
+    <!-- Build Configuration -->
+    <build>
+        <plugins>
+            <!-- Spring Boot Maven Plugin -->
+            <!-- WHAT DOES THIS DO?
+                 - Packages application as JAR file
+                 - Allows running with: mvn spring-boot:run
+                 - Creates executable JAR
+            -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+    
+</project>

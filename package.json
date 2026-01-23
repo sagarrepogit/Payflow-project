@@ -5,10 +5,11 @@
   "license": "ISC",
   "author": "Sagar Singh Baghel",
   "scripts": {
-    "backend": "cd backend && npm run server",
     "frontend": "cd frontend && npm run dev",
+    "backend": "cd java-backend && mvn spring-boot:run",
     "dev": "concurrently \"npm run backend\" \"npm run frontend\"",
-    "install-all": "npm install && cd backend && npm install && cd ../frontend && npm install"
+    "install-frontend": "cd frontend && npm install",
+    "install-backend": "cd java-backend && mvn clean install"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"

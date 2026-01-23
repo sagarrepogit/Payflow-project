@@ -20,7 +20,7 @@ import axios from 'axios'
 // Timeout: Request fails if no response in 10 seconds (prevents hanging)
 // Headers: Sets default Content-Type for JSON requests
 const api = axios.create({
-  baseURL: 'http://localhost:4001/api', // WHY BASE URL? All API calls start with this URL (backend runs on port 4001)
+  baseURL: 'http://localhost:4000/api', // WHY BASE URL? All API calls start with this URL (Java backend runs on port 4000)
   timeout: 10000, // WHY TIMEOUT? Prevents requests from hanging forever (10 seconds)
   headers: {
     'Content-Type': 'application/json' // WHY THIS HEADER? Tells backend we're sending JSON data
