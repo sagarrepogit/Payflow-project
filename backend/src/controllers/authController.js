@@ -2,18 +2,24 @@
 // CONTROLLER IMPORTS - Import everything we need for authentication logic
 // ============================================================================
 // 
+// MIGRATION FROM MONGODB TO MYSQL:
+// - Replaced Mongoose model imports with SQL query function imports
+// - Changed from User.findOne(), User.create() to findUserByEmail(), createUser()
+// - Changed from OTP.findOne(), OTP.create() to findValidOTP(), createOTP()
+// - Updated error handling for MySQL-specific errors (ER_DUP_ENTRY)
+// - Changed user._id to user.id (MySQL uses integer ID, not ObjectId)
+// 
 // WHY SEPARATE IMPORTS LIKE THIS?
 // Each import serves a specific purpose:
-// - Models: Database schemas (User)
+// - Models: SQL query functions (findUserByEmail, createUser, etc.)
 // - Utils: Helper functions (password hashing)
 // - Middleware: Authentication utilities (JWT token generation)
 // This organization makes code easier to understand and maintain
 
-// WHY REQUIRE USER MODEL?
-// User model defines the structure and validation for user data
-// Allows us to create, read, update users in database
-// Think of it as a blueprint for user documents in MongoDB
-const User = require('../models/user.js');
+// MIGRATION NOTE:
+// Old: const User = require('../models/user.js'); // Mongoose model
+// New: Import SQL query functions instead of Mongoose model
+const { findUserByEmail, findUserById, createUser } = require('../models/user.js');
 
 // WHY DESTRUCTURE PASSWORD UTILS?
 // { hashPassword, comparePassword } extracts only the functions we need
@@ -27,10 +33,10 @@ const { hashPassword, comparePassword } = require('../utils/password.js');
 // Imported from middleware because it's used in both middleware and controllers
 const { generateToken } = require('../middleware/auth.js');
 
-// WHY REQUIRE OTP MODEL?
-// OTP model stores one-time passwords for two-factor authentication
-// Allows us to create, validate, and mark OTPs as used
-const OTP = require('../models/otp.js');
+// MIGRATION NOTE:
+// Old: const OTP = require('../models/otp.js'); // Mongoose model
+// New: Import SQL query functions instead of Mongoose model
+const { findValidOTP, createOTP, markOTPAsUsed, invalidateUnusedOTPs } = require('../models/otp.js');
 
 // WHY REQUIRE OTP UTILITIES?
 // generateOTP creates random 6-digit codes
@@ -109,11 +115,15 @@ const signup = async (req, res) => {
             });
         }
 
+        // MIGRATION NOTE:
+        // Old: await User.findOne({ Email: Email.toLowerCase() })
+        // New: await findUserByEmail(Email.toLowerCase())
+        // 
         // Check email uniqueness BEFORE creating user
         // Prevents duplicate email errors and provides better UX
         // Using lowercase ensures case-insensitive check
         // Email is now the login identifier, so uniqueness is critical
-        const existingUserByEmail = await User.findOne({ Email: Email.toLowerCase() });
+        const existingUserByEmail = await findUserByEmail(Email);
         if (existingUserByEmail) {
             return res.status(409).json({
                 success: false,
@@ -126,19 +136,27 @@ const signup = async (req, res) => {
         // Hashing is one-way, can't reverse to get original password
         const hashedPassword = await hashPassword(Password);
 
+        // MIGRATION NOTE:
+        // Old: await User.create({ FullName, Email, Password: hashedPassword })
+        // New: await createUser({ FullName, Email, Password: hashedPassword })
+        // 
         // Create user with FullName, Email, and hashed password
         // Normalize email to lowercase for consistency
-        // Mongoose schema validation runs here (FullName format, Email format, Password strength, etc.)
-        const user = await User.create({
+        // Application-level validation runs in createUser() function
+        const user = await createUser({
             FullName: FullName.trim(), // Trim whitespace from full name
             Email: Email.toLowerCase(), // Normalize to lowercase
             Password: hashedPassword // Store hashed version, not plain text
         });
 
+        // MIGRATION NOTE:
+        // Old: generateToken(user._id) // MongoDB ObjectId
+        // New: generateToken(user.id) // MySQL integer ID
+        // 
         // Generate JWT token immediately after signup
         // Allows user to be logged in right after registration (better UX)
         // Token expires per JWT_EXPIRE setting
-        const token = generateToken(user._id);
+        const token = generateToken(user.id);
 
         // Return success response with user data and token
         // 201 Created = resource successfully created
@@ -149,7 +167,7 @@ const signup = async (req, res) => {
             message: 'User registered successfully',
             data: {
                 user: {
-                    _id: user._id,
+                    id: user.id, // MIGRATION: Changed from _id to id
                     FullName: user.FullName,
                     Email: user.Email,
                     createdAt: user.createdAt, // Useful for client-side display
@@ -163,23 +181,42 @@ const signup = async (req, res) => {
         // ERROR HANDLING - Different errors need different responses
         // ====================================================================
         // 
+        // MIGRATION NOTE:
+        // Old: error.name === 'ValidationError' (Mongoose validation)
+        // New: Application-level validation throws Error with message
+        // Old: error.code === 11000 (MongoDB duplicate key)
+        // New: error.code === 'ER_DUP_ENTRY' (MySQL duplicate entry)
+        
         // WHY HANDLE SPECIFIC ERRORS?
         // Different errors mean different things to the user
         // Specific error messages help users fix their input
         // Generic errors are frustrating - "something went wrong" doesn't help
         
-        // WHY CHECK ERROR.NAME === 'ValidationError'?
-        // Mongoose throws ValidationError when schema validation fails
-        // Example: password doesn't meet regex, email format invalid, name too short
-        // This is a user input problem, not a server problem (400 status)
-        if (error.name === 'ValidationError') {
-            // WHY EXTRACT ALL ERROR MESSAGES?
-            // User might have multiple validation errors (short password AND invalid email)
-            // Object.values(error.errors) gets all field errors
-            // .map() converts error objects to readable messages
-            // Shows user ALL problems at once, not just the first one
-            const errors = Object.values(error.errors).map(err => err.message);
-            
+        // MIGRATION: MySQL duplicate entry error
+        // MySQL error code ER_DUP_ENTRY = duplicate key violation
+        // Happens when trying to create user with existing email (UNIQUE constraint)
+        // Can occur if two signup requests happen simultaneously
+        if (error.code === 'ER_DUP_ENTRY') {
+            // WHY STATUS 409?
+            // 409 Conflict = resource already exists
+            // Different from 400 - data is valid, but conflicts with existing data
+            // User needs to use different email or login instead
+            return res.status(409).json({
+                success: false,
+                message: 'Email already registered. Please use another email or login.'
+            });
+        }
+
+        // MIGRATION: Application-level validation errors
+        // createUser() throws Error with message for validation failures
+        // Check if error message contains validation keywords
+        if (error.message && (
+            error.message.includes('required') ||
+            error.message.includes('must be') ||
+            error.message.includes('can only contain') ||
+            error.message.includes('Invalid') ||
+            error.message.includes('too long')
+        )) {
             // WHY STATUS 400?
             // 400 Bad Request = client sent invalid data
             // This is user's fault, not server's fault
@@ -187,29 +224,7 @@ const signup = async (req, res) => {
             return res.status(400).json({
                 success: false,
                 message: 'Validation error',
-                errors // Return all validation errors so user can fix all issues
-            });
-        }
-
-        // WHY CHECK ERROR.CODE === 11000?
-        // MongoDB error code 11000 = duplicate key violation
-        // Happens when trying to create user with existing email (unique constraint)
-        // Can occur if two signup requests happen simultaneously
-        // This is different from validation error - data is valid but already exists
-        if (error.code === 11000) {
-            // WHY EXTRACT FIELD NAME?
-            // error.keyPattern shows which field caused duplicate error
-            // Object.keys()[0] gets first field name (Email in our case)
-            // Creates specific message: "Email already exists" instead of generic error
-            const field = Object.keys(error.keyPattern)[0];
-            
-            // WHY STATUS 409?
-            // 409 Conflict = resource already exists
-            // Different from 400 - data is valid, but conflicts with existing data
-            // User needs to use different email or login instead
-            return res.status(409).json({
-                success: false,
-                message: `${field} already exists. Please use a different ${field}.`
+                error: error.message
             });
         }
 
@@ -258,11 +273,14 @@ const login = async (req, res) => {
             });
         }
 
+        // MIGRATION NOTE:
+        // Old: await User.findOne({ Email: Email.toLowerCase() }).select('+Password')
+        // New: await findUserByEmail(Email, true) // true = include password
+        // 
         // Find user by email
-        // .select('+Password') explicitly includes password field
-        // Password is excluded by default (select:false in schema) for security
-        // We need it here to compare with login password
-        const user = await User.findOne({ Email: Email.toLowerCase() }).select('+Password');
+        // includePassword = true to get password for comparison
+        // Password is excluded by default for security, but we need it here
+        const user = await findUserByEmail(Email, true);
 
         // Generic error message for both invalid email and password
         // Security best practice: don't reveal if email exists
@@ -306,28 +324,32 @@ const login = async (req, res) => {
         // - Prevents OTP spam for invalid login attempts
         // - Security: OTPs are only generated for legitimate login requests
 
+        // MIGRATION NOTE:
+        // Old: await OTP.updateMany({ Email, used: false }, { used: true })
+        // New: await invalidateUnusedOTPs(Email)
+        // 
         // STEP 3: Invalidate any existing unused OTPs for this email
         // Why invalidate old OTPs?
         // - Security: Prevents user from having multiple valid OTPs at once
         // - Prevents confusion: Only one OTP should be valid per email at a time
         // - Prevents abuse: Old OTPs can't be used if new one is requested
         // - Database cleanup: Marks old OTPs as used to prevent verification
-        await OTP.updateMany(
-            { Email: Email.toLowerCase(), used: false }, // Find unused OTPs for this email
-            { used: true } // Mark them as used (prevents verification)
-        );
+        await invalidateUnusedOTPs(Email);
 
+        // MIGRATION NOTE:
+        // Old: await OTP.create({ Email, OTP: otpCode, expiresAt, used: false })
+        // New: await createOTP({ Email, OTP: otpCode, expiresAt })
+        // 
         // STEP 4: Store new OTP in database
         // Why store OTP in database?
         // - Verification: Need to check if provided OTP matches stored OTP
-        // - Expiration tracking: Database can auto-delete expired OTPs via TTL index
+        // - Expiration tracking: Database tracks when OTP expires
         // - Usage tracking: Mark OTP as used after verification (one-time use)
         // - Security audit: Track when OTPs are generated and used
-        const otpRecord = await OTP.create({
+        const otpRecord = await createOTP({
             Email: Email.toLowerCase(), // Normalize email for consistent lookups
             OTP: otpCode, // The 6-digit OTP code (e.g., "123456")
-            expiresAt: expiresAt, // When this OTP becomes invalid (10 minutes from now)
-            used: false // Initially unused, set to true after successful verification
+            expiresAt: expiresAt // When this OTP becomes invalid (10 minutes from now)
         });
         
         // OTP generation and storage complete
@@ -379,7 +401,8 @@ const verifyOTP = async (req, res) => {
 
         // Re-verify password for additional security
         // Ensures the person verifying OTP is the same person who requested login
-        const user = await User.findOne({ Email: Email.toLowerCase() }).select('+Password');
+        // MIGRATION: Use findUserByEmail with includePassword = true
+        const user = await findUserByEmail(Email, true);
         
         if (!user) {
             return res.status(401).json({
@@ -396,25 +419,23 @@ const verifyOTP = async (req, res) => {
             });
         }
 
+        // MIGRATION NOTE:
+        // Old: await OTP.findOne({ Email, OTP: otpCode, used: false, expiresAt: { $gt: new Date() } })
+        // New: await findValidOTP(Email, otpCode)
+        // 
         // STEP 3: Find valid OTP in database for this email
         // OTP verification process:
         // 1. Match email - ensures OTP belongs to the correct user
         // 2. Match OTP code - provided code must match stored code
         // 3. Check used: false - OTP must not have been used already (one-time use)
-        // 4. Check expiration - expiresAt must be greater than current time ($gt = greater than)
+        // 4. Check expiration - expiresAt must be greater than current time
         // 
         // Why all these checks?
         // - Email match: Prevents using OTP from different account
         // - OTP match: Ensures user entered correct code
         // - Used check: One-time use prevents replay attacks
         // - Expiration check: Prevents using old/expired OTPs
-        const otpRecord = await OTP.findOne({
-            Email: Email.toLowerCase(), // Match email (normalized for consistency)
-            OTP: otpCode, // Match the 6-digit OTP code provided by user
-            used: false, // OTP must not have been used before (one-time use)
-            expiresAt: { $gt: new Date() } // Not expired - expiresAt > current time
-            // $gt = MongoDB operator for "greater than" - ensures OTP is still valid
-        });
+        const otpRecord = await findValidOTP(Email, otpCode);
 
         // STEP 4: Validate OTP record exists
         // If no matching OTP found, it means:
@@ -429,18 +450,25 @@ const verifyOTP = async (req, res) => {
             });
         }
 
+        // MIGRATION NOTE:
+        // Old: otpRecord.used = true; await otpRecord.save()
+        // New: await markOTPAsUsed(otpRecord.id)
+        // 
         // STEP 5: Mark OTP as used immediately after successful verification
         // Why mark as used before completing login?
         // - Prevents replay attacks: OTP can only be used once
         // - Atomic operation: If login fails after this, OTP is already marked (security)
         // - Prevents race conditions: Two simultaneous requests can't both use same OTP
         // - One-time use enforcement: Once verified, OTP becomes invalid
-        otpRecord.used = true;
-        await otpRecord.save(); // Persist the "used" status to database
+        await markOTPAsUsed(otpRecord.id);
 
+        // MIGRATION NOTE:
+        // Old: generateToken(user._id) // MongoDB ObjectId
+        // New: generateToken(user.id) // MySQL integer ID
+        // 
         // Generate JWT token after successful OTP verification
         // Token allows user to access protected routes without re-entering credentials
-        const token = generateToken(user._id);
+        const token = generateToken(user.id);
 
         // Return success with user data and token
         // 200 OK = OTP verified, login successful
@@ -450,7 +478,7 @@ const verifyOTP = async (req, res) => {
             message: 'OTP verified successfully. Login complete.',
             data: {
                 user: {
-                    _id: user._id,
+                    id: user.id, // MIGRATION: Changed from _id to id
                     FullName: user.FullName,
                     Email: user.Email,
                     createdAt: user.createdAt,

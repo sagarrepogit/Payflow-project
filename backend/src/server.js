@@ -7,7 +7,13 @@ const { env } = require('./config/env.js');
 // WHY IMPORT DATABASE CONNECTION?
 // We need to connect to database before server starts
 // Separate file keeps database logic organized and reusable
-const connectDB = require('./Database/db_connection.js');
+// 
+// MIGRATION NOTE:
+// - Old: Single connectDB function export
+// - New: Object with connectDB and getPool functions
+// - connectDB() initializes connection pool
+// - getPool() is used by models to execute queries
+const { connectDB } = require('./Database/db_connection.js');
 
 // WHY EXPRESS?
 // Express is the most popular Node.js web framework

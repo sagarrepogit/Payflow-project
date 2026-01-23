@@ -2,6 +2,11 @@
 // AUTHENTICATION MIDDLEWARE - JWT Token Generation and Verification
 // ============================================================================
 // 
+// MIGRATION FROM MONGODB TO MYSQL:
+// - Replaced User.findById() with findUserById() SQL query function
+// - Changed user._id to user.id (MySQL uses integer ID, not ObjectId)
+// - JWT tokens now store integer userId instead of ObjectId string
+// 
 // WHAT IS MIDDLEWARE?
 // Middleware functions run between receiving request and sending response
 // They can modify request, end request-response cycle, or call next middleware
@@ -26,11 +31,10 @@ const jwt = require('jsonwebtoken');
 // Stored in environment variables for security
 const { env } = require('../config/env.js');
 
-// WHY IMPORT USER MODEL?
-// Need to fetch user data after verifying token
-// Token contains userId, but we need full user object
-// Verifies user still exists (might have been deleted)
-const User = require('../models/user.js');
+// MIGRATION NOTE:
+// Old: const User = require('../models/user.js'); // Mongoose model
+// New: Import SQL query function instead of Mongoose model
+const { findUserById } = require('../models/user.js');
 
 /**
  * Generate JWT Token
@@ -58,11 +62,10 @@ const User = require('../models/user.js');
  * - Fresh data: Fetch user data from database when needed (always up-to-date)
  * - Flexibility: User info changes don't invalidate old tokens
  * 
- * WHY USERID SPECIFICALLY?
- * - Unique identifier for user
- * - Small (MongoDB ObjectId is 24 characters)
- * - Immutable (doesn't change like email or name)
- * - Enough to identify user for database lookup
+ * MIGRATION NOTE:
+ * - Old: userId was MongoDB ObjectId (24-char string like "507f1f77bcf86cd799439011")
+ * - New: userId is MySQL integer (1, 2, 3, ...)
+ * - JWT payload still contains userId, but now it's an integer
  * 
  * HOW JWT.SIGN WORKS:
  * - Takes payload (userId), secret key, and options
@@ -76,6 +79,9 @@ const generateToken = (userId) => {
     // { userId } is the payload (data stored in token)
     // env.JWT_SECRET is the secret key for signing (must be kept secret!)
     // { expiresIn } sets when token becomes invalid
+    // 
+    // MIGRATION NOTE:
+    // userId is now an integer (MySQL ID) instead of ObjectId string
     return jwt.sign({ userId }, env.JWT_SECRET, {
         // WHY EXPIRATION?
         // Tokens expire to limit damage if compromised
@@ -114,10 +120,16 @@ const authenticate = async (req, res, next) => {
         // Throws error if invalid/expired, caught in catch block
         const decoded = jwt.verify(token, env.JWT_SECRET);
 
+        // MIGRATION NOTE:
+        // Old: await User.findById(decoded.userId).select('-Password')
+        // New: await findUserById(decoded.userId) // Password excluded by default
+        // 
+        // decoded.userId is now an integer (MySQL ID) instead of ObjectId string
+        // 
         // Fetch user from database to ensure user still exists
         // Even if token is valid, user might have been deleted/deactivated
-        // Explicitly exclude password from query (security)
-        const user = await User.findById(decoded.userId).select('-Password');
+        // Password is excluded by default in findUserById() (security)
+        const user = await findUserById(decoded.userId);
 
         // If user doesn't exist, token is invalid (user was deleted)
         // Prevents access with tokens for deleted accounts
@@ -130,6 +142,7 @@ const authenticate = async (req, res, next) => {
 
         // Attach user object to request for use in route handlers
         // Controllers can access authenticated user via req.user
+        // MIGRATION NOTE: user.id is now the primary identifier (not user._id)
         req.user = user;
         next(); // Continue to next middleware/route handler
     } catch (error) {
